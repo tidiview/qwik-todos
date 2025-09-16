@@ -7,30 +7,46 @@ import {
   z,
   Form,
 } from "@builder.io/qwik-city";
+import { getDb } from "~/lib/db";
+import { readTursoEnv } from "~/lib/env";
 import styles from "./todolist.module.css";
 
-interface ListItem {
+// --- Types ---
+type ListItem = {
+  id: number;
   text: string;
-}
+};
 
-export const list: ListItem[] = [];
+// --- Loader ---
+export const useListLoader = routeLoader$(async ({ platform }) => {
+  const db = await getDb(readTursoEnv(platform));
+  const res = await db.execute("SELECT id, text FROM todos ORDER BY id DESC");
 
-export const useListLoader = routeLoader$(() => {
-  return list;
+  // typer correctement row
+  const todos: ListItem[] = res.rows.map((row: Record<string, unknown>) => ({
+    id: Number(row.id),
+    text: String(row.text),
+  }));
+
+  return todos;
 });
 
+// --- Action ---
 export const useAddToListAction = routeAction$(
-  (item) => {
-    list.push(item);
-    return {
-      success: true,
-    };
+  async (data, { platform }) => {
+    const db = await getDb(readTursoEnv(platform));
+    await db.execute({
+      sql: "INSERT INTO todos (text) VALUES (?)",
+      args: [data.text],
+    });
+    return { success: true };
   },
   zod$({
     text: z.string().trim().min(1),
   }),
 );
 
+// --- Component ---
 export default component$(() => {
   const list = useListLoader();
   const action = useAddToListAction();
@@ -50,8 +66,8 @@ export default component$(() => {
           <span class={styles.empty}>No items found</span>
         ) : (
           <ul class={styles.list}>
-            {list.value.map((item, index) => (
-              <li key={`items-${index}`}>{item.text}</li>
+            {list.value.map((item) => (
+              <li key={item.id}>{item.text}</li>
             ))}
           </ul>
         )}
