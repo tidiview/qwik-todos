@@ -90,18 +90,18 @@ export default component$(() => {
       </h1>
 
       {/* Bloc blanc comme dans success */}
-      <Form action={action} class="flex flex-col gap-4 bg-white shadow rounded-xl p-6">
+      <Form action={action} class="flex flex-col gap-4 bg-gray-50 shadow rounded-xl p-6">
         {/* Nom */}
         <div>
           {action.value?.fieldErrors?.name?.map((m: string) => (
             <p key={m} class="text-red-600 text-sm mb-1">{m}</p>
           ))}
-          <label class="block text-sm font-medium text-gray-700">Nom</label>
+          <label class="block text-sm font-medium text-gray-900">Nom</label>
           <input
             type="text"
             name="name"
             placeholder="Votre nom"
-            class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="mmt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-black placeholder-gray-500"
           />
         </div>
 
@@ -110,12 +110,12 @@ export default component$(() => {
           {action.value?.fieldErrors?.email?.map((m: string) => (
             <p key={m} class="text-red-600 text-sm mb-1">{m}</p>
           ))}
-          <label class="block text-sm font-medium text-gray-700">Email</label>
+          <label class="block text-sm font-medium text-gray-900">Email</label>
           <input
             type="email"
             name="email"
             placeholder="Votre email"
-            class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-black placeholder-gray-500"
           />
         </div>
 
@@ -124,11 +124,11 @@ export default component$(() => {
           {action.value?.fieldErrors?.message?.map((m: string) => (
             <p key={m} class="text-red-600 text-sm mb-1">{m}</p>
           ))}
-          <label class="block text-sm font-medium text-gray-700">Message</label>
+          <label class="block text-sm font-medium text-gray-900">Message</label>
           <textarea
             name="message"
             placeholder="Votre message"
-            class="mt-1 w-full h-32 rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-black placeholder-gray-500"
           />
         </div>
 

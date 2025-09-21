@@ -36,7 +36,7 @@ export default component$(() => {
         Merci pour votre message 🎉
       </h1>
 
-      <div class="flex flex-col gap-4 bg-white shadow rounded-xl p-6">
+      <div class="flex flex-col gap-4 bg-gray-50 shadow rounded-xl p-6">
         <div>
           <label class="block text-sm font-medium text-gray-700">Nom</label>
           <p class="mt-1 border rounded-md bg-gray-50 px-3 py-2 text-gray-800">
