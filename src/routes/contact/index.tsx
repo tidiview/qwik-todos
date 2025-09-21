@@ -1,5 +1,5 @@
 import { component$ } from '@builder.io/qwik';
-import { routeAction$, Form } from '@builder.io/qwik-city';
+import { routeAction$ } from '@builder.io/qwik-city';
 import {
   object,
   string,
@@ -42,9 +42,9 @@ type FieldErrors = {
 // --- Choix dynamique de l’API ---
 const getApiBaseUrl = () => {
   if (import.meta.env.DEV) {
-    return 'https://hono-todos.francois-vidit.workers.dev';
+    return "http://localhost:8788"; // wrangler dev
   }
-  return '/api';
+  return ""; // en prod => /api/contact
 };
 
 // --- Action ---
@@ -72,11 +72,11 @@ export const useContactAction = routeAction$(async (data, event) => {
 
   const form: ContactData = parsed.output;
 
-  const res = await fetch(`${getApiBaseUrl()}/contact`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(form),
-  });
+  const res = await fetch(`${getApiBaseUrl()}/api/contact`, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(form),
+});
 
   if (!res.ok) {
     return { error: true, fieldErrors: { _form: ['Erreur API'] } };
@@ -87,15 +87,23 @@ export const useContactAction = routeAction$(async (data, event) => {
   console.log('Réponse API:', json);
 
   if (!json.ok || !json.id) {
+    console.error("❌ Erreur API:", json);
     return { error: true, fieldErrors: { _form: ['Erreur API (pas d’id)'] } };
   }
 
+  console.log("✅ Redirection vers", `/contact/${json.id}/success`);
+
+  // ✅ redirection manuelle si Qwik n'applique pas le redirect
+if (import.meta.env.SSR) {
   throw event.redirect(302, `/contact/${json.id}/success`);
+} else {
+  window.location.href = `/contact/${json.id}/success`;
+}
 });
 
 // --- Composant ---
 export default component$(() => {
-  const action = useContactAction();
+  // const action = useContactAction();
 
   return (
     <div class="max-w-md mx-auto">
@@ -103,80 +111,21 @@ export default component$(() => {
         Contactez-nous
       </h1>
 
-      <Form
-        action={action}
-        class="flex flex-col gap-4 bg-gray-50 shadow rounded-xl p-6"
-      >
-        {/* Nom */}
-        <div>
-          {action.value?.fieldErrors?.name?.map((m) => (
-            <p key={m} class="text-red-600 text-sm mb-1">
-              {m}
-            </p>
-          ))}
-          <label class="block text-sm font-medium text-gray-900">Nom</label>
-          <input
-            type="text"
-            name="name"
-            placeholder="Votre nom"
-            class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 
-                   text-black placeholder-gray-500 
-                   focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        {/* Email */}
-        <div>
-          {action.value?.fieldErrors?.email?.map((m) => (
-            <p key={m} class="text-red-600 text-sm mb-1">
-              {m}
-            </p>
-          ))}
-          <label class="block text-sm font-medium text-gray-900">Email</label>
-          <input
-            type="email"
-            name="email"
-            placeholder="Votre email"
-            class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 
-                   text-black placeholder-gray-500 
-                   focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        {/* Message */}
-        <div>
-          {action.value?.fieldErrors?.message?.map((m) => (
-            <p key={m} class="text-red-600 text-sm mb-1">
-              {m}
-            </p>
-          ))}
-          <label class="block text-sm font-medium text-gray-900">Message</label>
-          <textarea
-            name="message"
-            placeholder="Votre message"
-            class="mt-1 w-full h-32 rounded-md border border-gray-300 px-3 py-2 
-                   text-black placeholder-gray-500 
-                   focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        {/* Erreurs globales */}
-        {action.value?.fieldErrors?._form?.map((m) => (
-          <p key={m} class="text-red-600 text-sm">
-            {m}
-          </p>
-        ))}
-
-        {/* Bouton */}
-        <button
-          type="submit"
-          disabled={action.isRunning}
-          class="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 
-                 font-medium text-white hover:bg-blue-700 disabled:opacity-60"
-        >
-          {action.isRunning ? 'Envoi en cours…' : 'Envoyer'}
-        </button>
-      </Form>
+      <form
+  action={import.meta.env.DEV
+    ? 'https://hono-todos.francois-vidit.workers.dev/contact/' // dev: parle direct au worker
+    : '/api/contact/'                                         // prod: passe par la Function proxy + redirection
+  }
+  method="post"
+  class="flex flex-col gap-4 bg-gray-50 shadow rounded-xl p-6"
+>
+  <input type="text" name="name" placeholder="Votre nom" />
+  <input type="email" name="email" placeholder="Votre email" />
+  <textarea name="message" placeholder="Votre message"></textarea>
+  <button type="submit" class="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700">
+    Envoyer
+  </button>
+</form>
     </div>
   );
 });
