@@ -43,6 +43,7 @@
     "wrangler": "^4.37.1"
   },
   "dependencies": {
-    "@libsql/client": "^0.15.15"
+    "@libsql/client": "^0.15.15",
+    "valibot": "^1.1.0"
   }
 }
