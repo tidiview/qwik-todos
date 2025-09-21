@@ -23,4 +23,6 @@ declare global {
   }
 }
 
-export const fetch = createQwikCity({ render, qwikCityPlan });
+const fetch = createQwikCity({ render, qwikCityPlan });
+
+export { fetch };
