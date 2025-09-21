@@ -85,33 +85,64 @@ export default component$(() => {
 
   return (
     <div class="max-w-md mx-auto">
-      <h1 class="text-2xl font-semibold mb-4">Contactez-nous</h1>
+      <h1 class="text-2xl font-semibold mb-4 text-center text-blue-700">
+        Contactez-nous
+      </h1>
 
-      <Form action={action} class="flex flex-col gap-4">
-        {/* Erreurs du champ name */}
-        {action.value?.fieldErrors?.name?.map((m: string) => (
-          <p class="text-red-600" key={m}>{m}</p>
-        ))}
-        <input type="text" name="name" placeholder="Votre nom" />
+      {/* Bloc blanc comme dans success */}
+      <Form action={action} class="flex flex-col gap-4 bg-white shadow rounded-xl p-6">
+        {/* Nom */}
+        <div>
+          {action.value?.fieldErrors?.name?.map((m: string) => (
+            <p key={m} class="text-red-600 text-sm mb-1">{m}</p>
+          ))}
+          <label class="block text-sm font-medium text-gray-700">Nom</label>
+          <input
+            type="text"
+            name="name"
+            placeholder="Votre nom"
+            class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
 
-        {/* Erreurs du champ email */}
-        {action.value?.fieldErrors?.email?.map((m: string) => (
-          <p class="text-red-600" key={m}>{m}</p>
-        ))}
-        <input type="email" name="email" placeholder="Votre email" />
+        {/* Email */}
+        <div>
+          {action.value?.fieldErrors?.email?.map((m: string) => (
+            <p key={m} class="text-red-600 text-sm mb-1">{m}</p>
+          ))}
+          <label class="block text-sm font-medium text-gray-700">Email</label>
+          <input
+            type="email"
+            name="email"
+            placeholder="Votre email"
+            class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
 
-        {/* Erreurs du champ message */}
-        {action.value?.fieldErrors?.message?.map((m: string) => (
-          <p class="text-red-600" key={m}>{m}</p>
-        ))}
-        <textarea name="message" placeholder="Votre message" />
+        {/* Message */}
+        <div>
+          {action.value?.fieldErrors?.message?.map((m: string) => (
+            <p key={m} class="text-red-600 text-sm mb-1">{m}</p>
+          ))}
+          <label class="block text-sm font-medium text-gray-700">Message</label>
+          <textarea
+            name="message"
+            placeholder="Votre message"
+            class="mt-1 w-full h-32 rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
 
-        {/* Erreurs globales (ex: bot, logique serveur) */}
+        {/* Erreurs globales */}
         {action.value?.fieldErrors?._form?.map((m: string) => (
-          <p class="text-red-600" key={m}>{m}</p>
+          <p key={m} class="text-red-600 text-sm">{m}</p>
         ))}
 
-        <button type="submit" disabled={action.isRunning}>
+        {/* Bouton */}
+        <button
+          type="submit"
+          disabled={action.isRunning}
+          class="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:opacity-60"
+        >
           {action.isRunning ? 'Envoi en cours…' : 'Envoyer'}
         </button>
       </Form>
