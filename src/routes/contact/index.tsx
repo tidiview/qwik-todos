@@ -1,6 +1,5 @@
 import { component$ } from '@builder.io/qwik';
 import { routeAction$, Form } from '@builder.io/qwik-city';
-import { createClient, ResultSet } from '@libsql/client/web';
 import {
   object,
   string,
@@ -32,21 +31,34 @@ const contactSchema = object({
 });
 type ContactData = InferOutput<typeof contactSchema>;
 
+// --- Type des erreurs pour être plus strict ---
+type FieldErrors = {
+  name?: string[];
+  email?: string[];
+  message?: string[];
+  _form?: string[];
+};
+
+// --- Choix dynamique de l’API ---
+const getApiBaseUrl = () => {
+  if (import.meta.env.DEV) {
+    return 'https://hono-todos.francois-vidit.workers.dev';
+  }
+  return '/api';
+};
+
 // --- Action ---
 export const useContactAction = routeAction$(async (data, event) => {
-  // ⚡ Cast explicite → évite undefined
   const formData = {
     name: String(data.name ?? ''),
     email: String(data.email ?? ''),
     message: String(data.message ?? ''),
   };
 
-  // ✅ Validation Valibot
   const parsed = safeParse(contactSchema, formData);
   if (!parsed.success) {
-    // On transforme les issues en dictionnaire { champ: [messages...] }
-    const fieldErrors = parsed.issues.reduce<Record<string, string[]>>((acc, issue: any) => {
-      const key = issue.path?.[0]?.key as string | undefined;
+    const fieldErrors = parsed.issues.reduce<FieldErrors>((acc, issue: any) => {
+      const key = issue.path?.[0]?.key as keyof FieldErrors | undefined;
       const msg = issue.message ?? 'Valeur invalide';
       if (key) {
         (acc[key] ??= []).push(msg);
@@ -60,23 +72,25 @@ export const useContactAction = routeAction$(async (data, event) => {
 
   const form: ContactData = parsed.output;
 
-  // ✅ Insertion Turso
-  const client = createClient({
-    url: event.env.get('TURSO_DATABASE_URL')!,
-    authToken: event.env.get('TURSO_AUTH_TOKEN')!,
+  const res = await fetch(`${getApiBaseUrl()}/contact`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(form),
   });
 
-  const result: ResultSet = await client.execute(
-    'INSERT INTO contact_messages (name, email, message) VALUES (?, ?, ?)',
-    [form.name, form.email, form.message]
-  );
+  if (!res.ok) {
+    return { error: true, fieldErrors: { _form: ['Erreur API'] } };
+  }
 
-if (!result.lastInsertRowid) {
-  throw new Error('Insertion échouée');
-}
+  const json = (await res.json()) as { ok: boolean; id?: string };
 
-const id = String(result.lastInsertRowid);
-throw event.redirect(302, `/contact/${id}/success`);
+  console.log('Réponse API:', json);
+
+  if (!json.ok || !json.id) {
+    return { error: true, fieldErrors: { _form: ['Erreur API (pas d’id)'] } };
+  }
+
+  throw event.redirect(302, `/contact/${json.id}/success`);
 });
 
 // --- Composant ---
@@ -89,59 +103,76 @@ export default component$(() => {
         Contactez-nous
       </h1>
 
-      {/* Bloc blanc comme dans success */}
-      <Form action={action} class="flex flex-col gap-4 bg-gray-50 shadow rounded-xl p-6">
+      <Form
+        action={action}
+        class="flex flex-col gap-4 bg-gray-50 shadow rounded-xl p-6"
+      >
         {/* Nom */}
         <div>
-          {action.value?.fieldErrors?.name?.map((m: string) => (
-            <p key={m} class="text-red-600 text-sm mb-1">{m}</p>
+          {action.value?.fieldErrors?.name?.map((m) => (
+            <p key={m} class="text-red-600 text-sm mb-1">
+              {m}
+            </p>
           ))}
           <label class="block text-sm font-medium text-gray-900">Nom</label>
           <input
             type="text"
             name="name"
             placeholder="Votre nom"
-            class="mmt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-black placeholder-gray-500"
+            class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 
+                   text-black placeholder-gray-500 
+                   focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
         {/* Email */}
         <div>
-          {action.value?.fieldErrors?.email?.map((m: string) => (
-            <p key={m} class="text-red-600 text-sm mb-1">{m}</p>
+          {action.value?.fieldErrors?.email?.map((m) => (
+            <p key={m} class="text-red-600 text-sm mb-1">
+              {m}
+            </p>
           ))}
           <label class="block text-sm font-medium text-gray-900">Email</label>
           <input
             type="email"
             name="email"
             placeholder="Votre email"
-            class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-black placeholder-gray-500"
+            class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 
+                   text-black placeholder-gray-500 
+                   focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
         {/* Message */}
         <div>
-          {action.value?.fieldErrors?.message?.map((m: string) => (
-            <p key={m} class="text-red-600 text-sm mb-1">{m}</p>
+          {action.value?.fieldErrors?.message?.map((m) => (
+            <p key={m} class="text-red-600 text-sm mb-1">
+              {m}
+            </p>
           ))}
           <label class="block text-sm font-medium text-gray-900">Message</label>
           <textarea
             name="message"
             placeholder="Votre message"
-            class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-black placeholder-gray-500"
+            class="mt-1 w-full h-32 rounded-md border border-gray-300 px-3 py-2 
+                   text-black placeholder-gray-500 
+                   focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
         {/* Erreurs globales */}
-        {action.value?.fieldErrors?._form?.map((m: string) => (
-          <p key={m} class="text-red-600 text-sm">{m}</p>
+        {action.value?.fieldErrors?._form?.map((m) => (
+          <p key={m} class="text-red-600 text-sm">
+            {m}
+          </p>
         ))}
 
         {/* Bouton */}
         <button
           type="submit"
           disabled={action.isRunning}
-          class="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:opacity-60"
+          class="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 
+                 font-medium text-white hover:bg-blue-700 disabled:opacity-60"
         >
           {action.isRunning ? 'Envoi en cours…' : 'Envoyer'}
         </button>
