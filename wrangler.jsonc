@@ -1,0 +1,10 @@
+{
+  // Un nom pour ton projet (doit être unique dans ton compte Cloudflare)
+  "name": "qwik-todos",
+
+  // Version de compatibilité (mets la date du jour ou un peu avant)
+  "compatibility_date": "2024-09-21",
+
+  // Configuration spécifique Pages
+  "pages_build_output_dir": "dist"
+}
