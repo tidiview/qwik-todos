@@ -24,7 +24,7 @@
   },
   "env": {
     "production": {
-      "route": "qwik-todos-bpk.pages.dev/*"
+      "route": "qwik-todos.francois-vidit.workers.dev/*"
     }
   }
 }
