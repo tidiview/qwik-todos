@@ -48,6 +48,7 @@
     "wrangler": "^4.37.1"
   },
   "dependencies": {
+    "@cloudflare/workers-types": "^4.20250921.0",
     "@libsql/client": "^0.15.15",
     "valibot": "^1.1.0"
   }
