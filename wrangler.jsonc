@@ -6,5 +6,25 @@
   "compatibility_date": "2024-09-21",
 
   // Configuration spécifique Pages
-  "pages_build_output_dir": "dist"
+  "pages_build_output_dir": "dist",
+  "main": "functions/_middleware.ts",
+  "observability": {
+    "logs": {
+      "enabled": true
+    }
+  },
+  "build": {
+    "command": "npm run build",
+    "cwd": ".",
+    "watch_dir": "dist"
+  },
+  "site": {
+    "bucket": "./dist",
+    "entry-point": "./functions"
+  },
+  "env": {
+    "production": {
+      "route": "qwik-todos-bpk.pages.dev/*"
+    }
+  }
 }
